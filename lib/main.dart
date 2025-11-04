@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fms_software/views/auth/login_screen.dart';
+import 'package:fms_software/views/dashboard_screen.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -25,7 +26,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const LoginScreen(),
+     // home: const LoginScreen(),
+      home: DashboardScreen(),
     );
   }
 }
