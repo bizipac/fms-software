@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fms_software/views/dashboard_screen.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../models/user_model.dart';
+import '../dashboard_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class OtpScreen extends StatefulWidget {
-  final String mobileNumber; // to show number dynamically
+  final UserModel userModel;
 
-  const OtpScreen({super.key, required this.mobileNumber});
+  const OtpScreen({super.key, required this.userModel});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -15,6 +18,28 @@ class OtpScreen extends StatefulWidget {
 class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  // 🔹 Function to save user data locally
+  Future<void> saveUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final user = widget.userModel.data.first;
+
+    // Integers
+    await prefs.setInt('user_id', user.userId ?? 0);
+    await prefs.setInt('user_role', user.userRole ?? 0);
+    await prefs.setInt('branch_id', user.branchId ?? 0);
+
+    // Strings
+    await prefs.setString('user_fname', user.userFname ?? '');
+    await prefs.setString('user_avter', user.avatar ?? '');
+    await prefs.setString('user_address', user.userAddress ?? '');
+    await prefs.setString('branch_multi', user.branchMulti ?? '');
+    await prefs.setString('user_mobile', user.userMobile ?? '');
+    await prefs.setString('branch_name', user.branchName ?? '');
+    await prefs.setString('role_name', user.roleName ?? '');
+    await prefs.setString('company_name', user.companyName ?? '');
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +59,15 @@ class _OtpScreenState extends State<OtpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 🔹 Logo at the top right
                   Align(
                     alignment: Alignment.topRight,
                     child: Image.asset(
-                      'assets/logo/cmp_logo.png', // your logo path
+                      'assets/logo/cmp_logo.png',
                       height: size.height * 0.09,
                     ),
                   ),
                   SizedBox(height: size.height * 0.1),
 
-                  // 🔹 Title text
                   const Text(
                     'OTP!',
                     style: TextStyle(
@@ -55,16 +78,27 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                   const SizedBox(height: 6),
 
-                  Text(
-                    'Send To: ${widget.mobileNumber}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'Hello -',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        widget.userModel.data.first.userFname ?? '',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: size.height * 0.07),
 
-                  // 🔹 OTP Text Field
                   TextFormField(
                     controller: _otpController,
                     keyboardType: TextInputType.number,
@@ -72,13 +106,11 @@ class _OtpScreenState extends State<OtpScreen> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter OTP';
-                      } else if (value.length < 4) {
-                        return 'OTP must be at least 4 digits';
                       }
                       return null;
                     },
                     decoration: const InputDecoration(
-                      labelText: 'Enter Otp..',
+                      labelText: 'Enter OTP..',
                       labelStyle: TextStyle(color: Colors.white70),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.white38),
@@ -90,28 +122,36 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                   SizedBox(height: size.height * 0.07),
 
-                  // 🔹 Verify Button
                   SizedBox(
                     width: double.infinity,
                     height: 45,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF7A81B), // yellow button
+                        backgroundColor: const Color(0xFFF7A81B),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
+
                         if (_formKey.currentState!.validate()) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('OTP Verified!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Get.offAll(()=>DashboardScreen());
+                          // 🔹 Compare OTP properly
+                          if (_otpController.text.trim() == '111111') {
+                            // ✅ Save to SharedPreferences
+                            await saveUserData();
+                            // ✅ Navigate to Dashboard
+                            Get.offAll(() => DashboardScreen());
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Your OTP is wrong. Please enter the correct OTP.'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         }
                       },
+
                       child: const Text(
                         'Verify',
                         style: TextStyle(

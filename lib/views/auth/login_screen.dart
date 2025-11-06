@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fms_software/utils/app_constant.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
+import '../../controllers/user_login_controller.dart';
 import 'otp_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final loginController = Get.put(UserLoginController());
 
   @override
   Widget build(BuildContext context) {
@@ -48,15 +52,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text(
                     'Hi !',
                     style: TextStyle(
-                      fontSize: 36,
+                      fontSize: 34,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   const Text(
-                    'Welcome',
+                    'Welcome to Bizipac',
                     style: TextStyle(
-                      fontSize: 36,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -74,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // 🔹 Mobile number field
                   TextFormField(
                     controller: _mobileController,
-                    keyboardType: TextInputType.phone,
+                    keyboardType: TextInputType.text,
                     style: const TextStyle(color: Colors.white),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -101,6 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    keyboardType: TextInputType.text,
                     style: const TextStyle(color: Colors.white),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -149,19 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Logging in...'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => OtpScreen(mobileNumber: '+91 6393539704'),
-                            ),
-                          );
-
+                          loginController.loginUser(_mobileController.text, _passwordController.text);
                         }
                       },
                       child: const Text(

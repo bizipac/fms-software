@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fms_software/views/auth/login_screen.dart';
+import 'package:fms_software/views/profile_screen.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../notification/send_notification_screen.dart';
 import '../services/get_server_key.dart';
 import '../utils/app_constant.dart';
@@ -20,6 +22,22 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   DateTime _currentTime = DateTime.now();
   late Timer _timer;
+  int? userId;
+  int? userRole;
+  int? authId;
+  int? branchId;
+
+  String? userName;
+  String? branchName;
+  String? userFname;
+  String? userAvatar;
+  String? userAddress;
+  String? branchMulti;
+  String? userMobile;
+  String? roleName;
+  String? companyName;
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -28,6 +46,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _currentTime = DateTime.now();
       });
+    });
+    loadUserData(); // load on start
+  }
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Read integers (may return null if not present)
+    setState(() {
+      userId     = prefs.getInt('user_id');       // e.g. 0 or null
+      userRole   = prefs.getInt('user_role');
+      authId     = prefs.getInt('auth_id');
+      branchId   = prefs.getInt('branch_id');
+
+      // Read strings (may return null)
+      userName    = prefs.getString('user_name');
+      branchName  = prefs.getString('branch_name');
+      userFname   = prefs.getString('user_fname');
+      userAvatar  = prefs.getString('user_avatar');
+      userAddress = prefs.getString('user_address');
+      branchMulti = prefs.getString('branch_multi');
+      userMobile  = prefs.getString('user_mobile');
+      roleName    = prefs.getString('role_name');
+      companyName = prefs.getString('company_name');
     });
   }
   @override
@@ -41,12 +82,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         iconTheme: IconThemeData(color: Colors.black),
         backgroundColor: AppConstant.appBarColor,
         title: Text(
-          "Mumbai- Shubham Gupta",
+          "${userAddress} - ${userFname}",
           style: TextStyle(color: AppConstant.appBarWhiteColor,fontSize: 18),
         ),
         actions: [
-          IconButton(onPressed: (){
-            Get.to(()=>LoginScreen());
+          IconButton(
+            onPressed: () {
+              Get.to(() => ProfileScreen());
+            },
+            icon: Icon(Icons.person_pin, color: AppConstant.appBarWhiteColor),
+          ),
+          IconButton(onPressed: ()async{
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.clear();
+            Get.offAll(() => const LoginScreen());
           }, icon: Icon(Icons.logout,color: Colors.white,))
         ],
       ),

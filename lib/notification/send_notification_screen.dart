@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fms_software/views/dashboard_screen.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import '../controllers/get_all_user_by_branch_controller.dart';
 import '../controllers/get_branch_controller.dart';
@@ -243,17 +246,15 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
 
 
     setState(() => _isSending = false);
-
+    Get.offAll(()=>DashboardScreen());
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content:
         Text('✅ Notification sent to ${_selectedUsers.length} users'),
       ),
     );
-
     _clearSelection();
   }
-
   /// 🔹 UI
   @override
   Widget build(BuildContext context) {
@@ -272,25 +273,106 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// Branch Dropdown
-              DropdownButtonFormField<GetAllBranchModel>(
-                decoration: const InputDecoration(
-                  labelText: "Select Branch",
-                  border: OutlineInputBorder(),
-                ),
-                value: _selectedBranch,
-                items: _branchList.map((branch) {
-                  return DropdownMenuItem(
-                    value: branch,
-                    child: Text(branch.branchName),
+              // DropdownButtonFormField<GetAllBranchModel>(
+              //   decoration: const InputDecoration(
+              //     labelText: "Select Branch",
+              //     border: OutlineInputBorder(),
+              //   ),
+              //   value: _selectedBranch,
+              //   items: _branchList.map((branch) {
+              //     return DropdownMenuItem(
+              //       value: branch,
+              //       child: Text(branch.branchName),
+              //     );
+              //   }).toList(),
+              //   onChanged: (value) {
+              //     setState(() => _selectedBranch = value);
+              //     if (value != null) {
+              //       _fetchUsers(value.branchId.toString());
+              //     }
+              //   },
+              // ),
+              GestureDetector(
+                onTap: () async {
+                  final selected = await showDialog<GetAllBranchModel>(
+                    context: context,
+                    builder: (context) {
+                      TextEditingController searchController = TextEditingController();
+                      List<GetAllBranchModel> filteredList = List.from(_branchList);
+
+                      return StatefulBuilder(
+                        builder: (context, setState) {
+                          return AlertDialog(
+                            title: const Text("Select Branch"),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  controller: searchController,
+                                  decoration: const InputDecoration(
+                                    hintText: "Search branch...",
+                                    prefixIcon: Icon(Icons.search),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      filteredList = _branchList
+                                          .where((b) => b.branchName
+                                          .toLowerCase()
+                                          .contains(value.toLowerCase()))
+                                          .toList();
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  height: 250,
+                                  width: double.maxFinite,
+                                  child: ListView.builder(
+                                    itemCount: filteredList.length,
+                                    itemBuilder: (context, index) {
+                                      final branch = filteredList[index];
+                                      return ListTile(
+                                        title: Text(branch.branchName),
+                                        onTap: () {
+                                          Navigator.pop(context, branch);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
                   );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() => _selectedBranch = value);
-                  if (value != null) {
-                    _fetchUsers(value.branchId.toString());
+
+                  // ✅ Handle selection
+                  if (selected != null) {
+                    setState(() => _selectedBranch = selected);
+                    _fetchUsers(selected.branchId.toString());
                   }
                 },
-              ),
+                child: AbsorbPointer(
+                  child: DropdownButtonFormField<GetAllBranchModel>(
+                    value: _selectedBranch,
+                    decoration: const InputDecoration(
+                      labelText: "Select Branch",
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _branchList.map((branch) {
+                      return DropdownMenuItem(
+                        value: branch,
+                        child: Text(branch.branchName),
+                      );
+                    }).toList(),
+                    onChanged: (_) {},
+                  ),
+                ),
+              )
+,
 
               const SizedBox(height: 10),
 
@@ -300,8 +382,8 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: _toggleSelectAll,
-                      icon: const Icon(Icons.select_all),
-                      label: const Text("Select All"),
+                      icon: const Icon(Icons.select_all,color: Colors.white,),
+                      label: const Text("Select All",style: TextStyle(color: Colors.white),),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
@@ -309,8 +391,8 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                     const SizedBox(width: 10),
                     ElevatedButton.icon(
                       onPressed: _clearSelection,
-                      icon: const Icon(Icons.clear),
-                      label: const Text("Clear"),
+                      icon: const Icon(Icons.clear,color: Colors.white,),
+                      label: const Text("Clear",style: TextStyle(color: Colors.white),),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                       ),
@@ -406,10 +488,10 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                   child: ElevatedButton.icon(
                     onPressed:
                     _isSending ? null : _sendToSelectedUsers,
-                    icon: const Icon(Icons.send),
+                    icon: const Icon(Icons.send,color: Colors.white,),
                     label: Text(_isSending
                         ? "Sending..."
-                        : "Send Notification"),
+                        : "Send Notification",style: TextStyle(color: Colors.white),),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppConstant.appBarColor,
                       padding:
