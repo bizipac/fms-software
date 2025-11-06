@@ -41,6 +41,8 @@ dependencies:
   firebase_messaging:
   googleapis_auth: ^2.0.0
   http:
+  dropdown_search: ^6.0.1
+  shared_preferences:
 
 dev_dependencies:
   flutter_test:
