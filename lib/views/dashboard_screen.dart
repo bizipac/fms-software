@@ -4,7 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fms_software/views/auth/login_screen.dart';
+import 'package:fms_software/views/ci_verification_screen.dart';
+import 'package:fms_software/views/cia_verification_screen.dart';
 import 'package:fms_software/views/profile_screen.dart';
+import 'package:fms_software/views/query_screen.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../notification/send_notification_screen.dart';
@@ -72,6 +75,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
   @override
+  void dispose() {
+    _timer?.cancel(); // stop before widget is destroyed
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     final String timeString =
         '${_currentTime.hour.toString().padLeft(2, '0')}:'
@@ -83,7 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: AppConstant.appBarColor,
         title: Text(
           "${userAddress} - ${userFname}",
-          style: TextStyle(color: AppConstant.appBarWhiteColor,fontSize: 18),
+          style: TextStyle(color: AppConstant.appBarWhiteColor,fontSize: 15),
         ),
         actions: [
           IconButton(
@@ -124,7 +132,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () {
-                         // Get.to(() => ReceivedLeadScreen());
+                          Get.to(() => CiVerificationScreen());
                         },
                         child: Stack(
                           children: [
@@ -185,7 +193,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          //Get.to(() => TransferLeadScreen());
+                          Get.to(() => CiaVerificationScreen());
                         },
                         child: Stack(
                           children: [
@@ -252,9 +260,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () {
-                          // Get.to(
-                          //       () => LeadCheckScreen(uid: uid, branchId: branchId),
-                          // );
+                          Get.to(
+                                () => QueryScreen(),
+                          );
                         },
                         child: Stack(
                           children: [

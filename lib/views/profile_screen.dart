@@ -76,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           elevation: 6,
           child: Container(
             width: 300,
-            height: 525,
+            height: 550,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: AppConstant.borderColor, width: 2),
@@ -113,22 +113,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     width: 100,
-                    height: 120,
+                    height: 100,
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppConstant.borderColor),
-                      image: DecorationImage(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppConstant.borderColor, width: 2),
+                    ),
+                    child: ClipOval(
+                      child: Image(
                         image: (userAvatar != null && userAvatar!.startsWith('http'))
                             ? NetworkImage(userAvatar!)
-                            : const AssetImage('assets/images/default_avatar.png')
-                        as ImageProvider,
+                            : const AssetImage('assets/logo/cmp_logo.png') as ImageProvider,
                         fit: BoxFit.cover,
+                        width: 100,
+                        height: 100,
                       ),
                     ),
                   ),
-                ),
-
+                )
+,
                 const SizedBox(height: 20),
-
                 // 🧾 Info Table
                 Container(
                   padding: const EdgeInsets.all(5),
@@ -144,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       tableRow("Name", userFname ?? ''),
                       tableRow("User ID", "$userId"),
-                      tableRow("Role", roleName ?? ''),
+                      tableRow("Role", roleName?.toUpperCase() ?? ''),
                       tableRow("Mobile No.", userMobile ?? ''),
                     ],
                   ),
@@ -161,10 +164,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 11),
                       ),
-                      const SizedBox(height: 6),
+
                     ],
                   ),
                 ),
+                const SizedBox(height: 60,),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        children: [
+                          Image.network(
+                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBffILJ92k1DqB9SbQ2hSlGx3DCu22vNoGBA&s',
+                            width: 80,
+                            height: 40,
+                            fit: BoxFit.contain,
+                          ),
+
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Image.asset(
+                            'assets/logo/cmp_logo.png',
+                            width: 80,
+                            height: 40,
+                            fit: BoxFit.contain,
+                          ),
+
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Image.network(
+                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpuLVmHdeBlG7ibYOp-61BhNjvy4RZvLwljA&s',
+                            width: 80,
+                            height: 40,
+                            fit: BoxFit.contain,
+                          ),
+
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
               ],
             ),
           ),

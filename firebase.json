@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"bizipac-6bb00","appId":"1:32841765040:android:c23913935e2a4a6edc6b75","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"bizipac-6bb00","configurations":{"android":"1:32841765040:android:c23913935e2a4a6edc6b75","ios":"1:32841765040:ios:4dd6ca130314afb3dc6b75","web":"1:32841765040:web:2b92cfe190217ccbdc6b75"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "bizipac-6bb00",
+          "appId": "1:32841765040:android:c23913935e2a4a6edc6b75",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "bizipac-6bb00",
+          "configurations": {
+            "android": "1:32841765040:android:c23913935e2a4a6edc6b75",
+            "ios": "1:32841765040:ios:4dd6ca130314afb3dc6b75",
+            "web": "1:32841765040:web:2b92cfe190217ccbdc6b75"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

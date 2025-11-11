@@ -43,6 +43,9 @@ dependencies:
   http:
   dropdown_search: ^6.0.1
   shared_preferences:
+  webview_flutter: ^4.0.7
+  url_launcher:
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
