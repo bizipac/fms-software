@@ -74,7 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: size.height * 0.06),
-
                   // 🔹 Mobile number field
                   TextFormField(
                     controller: _mobileController,
@@ -100,7 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: size.height * 0.03),
-
                   // 🔹 Password field
                   TextFormField(
                     controller: _passwordController,
@@ -140,7 +138,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: size.height * 0.07),
-
                   // 🔹 Login button
                   SizedBox(
                     width: double.infinity,

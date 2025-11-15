@@ -46,6 +46,7 @@ dependencies:
   webview_flutter: ^4.0.7
   url_launcher:
   audioplayers: ^6.1.0
+  intl:
 
 dev_dependencies:
   flutter_test:

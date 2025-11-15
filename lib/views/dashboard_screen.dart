@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fms_software/views/auth/login_screen.dart';
 import 'package:fms_software/views/ci_verification_screen.dart';
-import 'package:fms_software/views/cia_verification_screen.dart';
+import 'package:fms_software/views/cfi_verification_screen.dart';
 import 'package:fms_software/views/profile_screen.dart';
 import 'package:fms_software/views/query_screen.dart';
 import 'package:get/get.dart';
@@ -165,7 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    "CI Verification",
+                                    "C-I Verification",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -193,7 +193,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          Get.to(() => CiaVerificationScreen());
+                          Get.to(() => CfiVerificationScreen());
                         },
                         child: Stack(
                           children: [
@@ -226,7 +226,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    "CIA Verification",
+                                    "C-FI Verification",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,

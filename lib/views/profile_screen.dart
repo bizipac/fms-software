@@ -172,19 +172,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Column(
-                        children: [
-                          Image.network(
-                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBffILJ92k1DqB9SbQ2hSlGx3DCu22vNoGBA&s',
-                            width: 80,
-                            height: 40,
-                            fit: BoxFit.contain,
-                          ),
-
-                        ],
-                      ),
+                      // Column(
+                      //   children: [
+                      //     Image.network(
+                      //       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBffILJ92k1DqB9SbQ2hSlGx3DCu22vNoGBA&s',
+                      //       width: 80,
+                      //       height: 40,
+                      //       fit: BoxFit.contain,
+                      //     ),
+                      //
+                      //   ],
+                      // ),
                       Column(
                         children: [
                           Image.asset(
@@ -196,17 +196,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         ],
                       ),
-                      Column(
-                        children: [
-                          Image.network(
-                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpuLVmHdeBlG7ibYOp-61BhNjvy4RZvLwljA&s',
-                            width: 80,
-                            height: 40,
-                            fit: BoxFit.contain,
-                          ),
-
-                        ],
-                      ),
+                      // Column(
+                      //   children: [
+                      //     Image.network(
+                      //       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpuLVmHdeBlG7ibYOp-61BhNjvy4RZvLwljA&s',
+                      //       width: 80,
+                      //       height: 40,
+                      //       fit: BoxFit.contain,
+                      //     ),
+                      //
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),
