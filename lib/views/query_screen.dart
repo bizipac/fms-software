@@ -55,12 +55,10 @@ class _QueryScreenState extends State<QueryScreen> {
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.search),
                         onPressed: () async {
-
                           final query = searchController.text.trim();
                           if (query.isNotEmpty) {
                             await controller.fetchLeads(query);
                             setState(() {
-
                             });
                           } else {
                             Get.snackbar("Error", "Please enter a mobile or lead ID");
@@ -80,14 +78,11 @@ class _QueryScreenState extends State<QueryScreen> {
                 if (controller.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
                 final details = controller.leadDetails.value;
                 if (details == null || details.leadMaster.isEmpty) {
                   return const Center(child: Text("No leads found"));
                 }
-
                 final leads = details.leadMaster;
-
                 return SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,8 +256,59 @@ class _QueryScreenState extends State<QueryScreen> {
 
                                   ],
                                 )),
-                                DataCell(Text(lead.leadId.toString())),
-                                DataCell(Text(lead.clientCode ?? 'N/A')),
+                            DataCell(
+                            TextButton(
+                            onPressed: () async {
+                            final leadId = lead.leadId.toString();
+
+                            // Fetch history
+                            await _leadstatuscontroller.fetchLeadHistory(leadId);
+                            List<CrmRecord> history = _leadstatuscontroller.historyList;
+
+                            print("Fetched history: ${history.length}");
+
+                            CrmRecord? latestRecord;
+
+                            if (history.isNotEmpty) {
+                            // Sort history by timestamp (newest first)
+                            history.sort((a, b) {
+                            DateTime dateA = DateTime.tryParse(a.resTimestamp ?? "") ?? DateTime(2000);
+                            DateTime dateB = DateTime.tryParse(b.resTimestamp ?? "") ?? DateTime(2000);
+                            return dateB.compareTo(dateA); // descending
+                            });
+
+                            latestRecord = history.first; // now this is latest by date
+                            }
+
+                            // Show dialog
+                            showDialog(
+                            context: context,
+                            builder: (context) {
+                            return AlertDialog(
+                            title: const Text("Latest Lead Status"),
+                            content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                            Text("Response: ${latestRecord?.response ?? 'No Response'}"),
+                            Text("Updated By: ${latestRecord?.uby ?? '-'}"),
+                            Text("Date & Time: ${latestRecord?.resTimestamp ?? '-'}"),
+                            ],
+                            ),
+                            actions: [
+                            TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("OK"),
+                            ),
+                            ],
+                            );
+                            },
+                            );
+                            },
+                            child: Text(lead.leadId.toString()),
+                            ),
+                            ),
+                            DataCell(Text(lead.clientCode ?? 'N/A')),
                                 DataCell(Text(lead.branchName ?? 'N/A')),
                                 DataCell(Text(lead.mobile ?? 'N/A')),
                                 DataCell(Text(lead.leadDate ?? 'N/A')),

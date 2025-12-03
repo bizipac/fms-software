@@ -47,6 +47,11 @@ dependencies:
   url_launcher:
   audioplayers: ^6.1.0
   intl:
+  excel:
+  path_provider:
+  permission_handler:
+  pdf:
+  printing:
 
 dev_dependencies:
   flutter_test:

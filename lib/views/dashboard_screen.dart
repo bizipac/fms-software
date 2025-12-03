@@ -13,6 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../notification/send_notification_screen.dart';
 import '../services/get_server_key.dart';
 import '../utils/app_constant.dart';
+import 'field_report_ai_screen.dart';
+import 'transfer_view_screen.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -460,9 +462,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          // _launchInBrowser(
-                          //   'https://fms.bizipac.com/apinew/dynamic_form/executive_add_form.php?user_id=$uid#!/',
-                          // );
+                          Get.to(()=>TransferViewScreen());
                         },
                         child: Stack(
                           children: [
@@ -597,9 +597,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          // _launchInBrowser(
-                          //   'https://fms.bizipac.com/apinew/dynamic_form/executive_add_form.php?user_id=$uid#!/',
-                          // );
+                          Get.to(()=>FieldReportAiScreen());
                         },
                         child: Stack(
                           children: [

@@ -29,6 +29,10 @@ class UserLoginController extends GetxController {
         loginResponse.value = UserModel.fromJson(data);
         if (loginResponse.value!.success == 1) {
           UserModel data=UserModel(success: loginResponse.value!.success, message: loginResponse.value!.message, data: loginResponse.value!.data);
+          print("------------------------");
+          print("Multi Branch - ");
+          print(data.data.first.branchMulti.toString());
+          print("------------------------");
           Get.to(()=>OtpScreen(userModel: data));
         } else {
           Get.snackbar(
