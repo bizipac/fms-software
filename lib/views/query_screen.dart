@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:fms_software/models/lead_status-history_model.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/fe_calls_controllers.dart';
 import '../controllers/get_lead_details_controllers.dart';
@@ -29,7 +30,17 @@ class _QueryScreenState extends State<QueryScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   String? _currentUrl;
   bool _isPlaying = false;
-
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '';
+    try {
+      final date = DateTime.parse(
+        dateString,
+      ); // API से जो format आता है वो parse होगा
+      return DateFormat('dd-MM-yyyy').format(date);
+    } catch (e) {
+      return dateString; // अगर parse fail हो जाए तो original string return
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,11 +102,16 @@ class _QueryScreenState extends State<QueryScreen> {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
+                          columnSpacing: 15,        // space between columns
+                          horizontalMargin: 12,      // left/right table margin
+                          dataRowMinHeight: 36,
+                          dataRowMaxHeight: 44,
+                          headingRowHeight: 40,
+                          dividerThickness: 0.5,
                           headingRowColor:
                           MaterialStateProperty.all(Colors.blueGrey.shade100),
                           border: TableBorder.all(color: Colors.grey.shade300),
-                          dataRowMinHeight: 10,
-                          dataRowMaxHeight: 35,
+                          
                           columns: const [
                             DataColumn(label: Text("Action", style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text("Lead ID", style: TextStyle(fontWeight: FontWeight.bold))),
@@ -151,7 +167,6 @@ class _QueryScreenState extends State<QueryScreen> {
                                           const Center(child: CircularProgressIndicator()),
                                           barrierDismissible: false,
                                         );
-
                                         try {
                                           final historyList = await fetchLeadCallHistory(leadId);
                                           Get.back(); // close loading dialog
@@ -311,7 +326,7 @@ class _QueryScreenState extends State<QueryScreen> {
                             DataCell(Text(lead.clientCode ?? 'N/A')),
                                 DataCell(Text(lead.branchName ?? 'N/A')),
                                 DataCell(Text(lead.mobile ?? 'N/A')),
-                                DataCell(Text(lead.leadDate ?? 'N/A')),
+                                DataCell(Text(_formatDate(lead.leadDate ?? 'N/A'))),
                                 DataCell(Text(lead.customerName ?? 'N/A')),
                               ],
                             );

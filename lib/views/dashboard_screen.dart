@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,16 +7,24 @@ import 'package:flutter/services.dart';
 import 'package:fms_software/views/auth/login_screen.dart';
 import 'package:fms_software/views/ci_verification_screen.dart';
 import 'package:fms_software/views/cfi_verification_screen.dart';
+import 'package:fms_software/views/lead_allocation_screen.dart';
+import 'package:fms_software/views/lead_asign_to_tl_screen.dart';
+import 'package:fms_software/views/lead_transfer_manager_screen.dart';
 import 'package:fms_software/views/profile_screen.dart';
 import 'package:fms_software/views/query_screen.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../controllers/get_branch_controller.dart';
+import '../models/get_all_branch_model.dart';
 import '../notification/send_notification_screen.dart';
 import '../services/get_server_key.dart';
 import '../utils/app_constant.dart';
+import 'assign_call_back_screen.dart';
+import 'daily_lead_report_screen.dart';
 import 'field_report_ai_screen.dart';
 import 'transfer_view_screen.dart';
-
 
 class DashboardScreen extends StatefulWidget {
   DashboardScreen({super.key});
@@ -25,6 +34,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  bool showFab = false;
   DateTime _currentTime = DateTime.now();
   late Timer _timer;
   int? userId;
@@ -42,7 +52,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? roleName;
   String? companyName;
 
+  final BranchController _branchController = BranchController();
 
+  List<GetAllBranchModel> _branchList = [];
+  GetAllBranchModel? _selectedBranch;
+  bool _isLoading = true;
+  List<String> allowedBranchIds = [];
+  bool _isLoadingBranches = true;
   @override
   void initState() {
     // TODO: implement initState
@@ -53,36 +69,126 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
     });
     loadUserData(); // load on start
+    loadBranches();
   }
+
+  void updateBranch(String newBranchId, String newBranchName) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // 🔥 Convert String to int correctly
+    int newbranch_id = int.tryParse(newBranchId) ?? 0;
+
+    // 🔥 Save updated values
+    await prefs.setInt('branch_id', newbranch_id);
+    await prefs.setString('branch_name', newBranchName);
+
+    // 🔥 Read again to confirm
+    int? savedId = prefs.getInt('branch_id');
+    String? name = prefs.getString('branch_name');
+
+    print("---------------------");
+    print("Updated Branch Name: $name");
+    print("Updated Branch ID  : $savedId");
+    print("Branch updated successfully!");
+    setState(() {
+
+    });
+  }
+
+  Future<void> loadBranches() async {
+    try {
+      List<GetAllBranchModel> branches = await _branchController
+          .fetchBranches();
+      // API से पूरी branch list आती होगी
+      List<GetAllBranchModel> allBranches = branches;
+
+      // 🔥 Filter only branches that match branchMulti
+      List<GetAllBranchModel> filtered = allBranches.where((b) {
+        return allowedBranchIds.contains(b.branchId.toString());
+      }).toList();
+      setState(() {
+        _branchList =
+            filtered; // 🔥 अब dropdown में सिर्फ filtered branches आएंगी
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
   Future<void> loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
 
     // Read integers (may return null if not present)
     setState(() {
-      userId     = prefs.getInt('user_id');       // e.g. 0 or null
-      userRole   = prefs.getInt('user_role');
-      authId     = prefs.getInt('auth_id');
-      branchId   = prefs.getInt('branch_id');
+      userId = prefs.getInt('user_id'); // e.g. 0 or null
+      userRole = prefs.getInt('user_role');
+      authId = prefs.getInt('auth_id');
+      branchId = prefs.getInt('branch_id');
 
       // Read strings (may return null)
-      userName    = prefs.getString('user_name');
-      branchName  = prefs.getString('branch_name');
-      userFname   = prefs.getString('user_fname');
-      userAvatar  = prefs.getString('user_avatar');
+      userName = prefs.getString('user_name');
+      branchName = prefs.getString('branch_name');
+      userFname = prefs.getString('user_fname');
+      userAvatar = prefs.getString('user_avatar');
       userAddress = prefs.getString('user_address');
       branchMulti = prefs.getString('branch_multi');
-      userMobile  = prefs.getString('user_mobile');
-      roleName    = prefs.getString('role_name');
+      userMobile = prefs.getString('user_mobile');
+      roleName = prefs.getString('role_name');
       companyName = prefs.getString('company_name');
+      if (branchMulti != null && branchMulti!.isNotEmpty) {
+        allowedBranchIds = branchMulti!.split(','); // ["1","5","8"]
+      }
+      setState(() {
+      });
     });
   }
+
+  Future<Map<String, dynamic>> getCurrentWeather() async {
+    const apiKey = "c982fe4c7334887db95c4653c68a5fde"; // ← अपनी API key डालें
+
+    // 1. Permission
+    LocationPermission permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      throw "Location permission denied";
+    }
+
+    // 2. Current Location
+    Position pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    // 3. Weather API Call
+    final url =
+        "https://api.openweathermap.org/data/3.0/weather?lat=${pos.latitude}&lon=${pos.longitude}&appid=$apiKey&units=metric";
+    print(url);
+
+    final response = await http.get(Uri.parse(url));
+    print("----------------");
+    print(response.body);
+    print("----------------");
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw "Failed to load weather";
+    }
+  }
+
+
   @override
   void dispose() {
     _timer?.cancel(); // stop before widget is destroyed
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
+    setState(() {
+
+    });
     final String timeString =
         '${_currentTime.hour.toString().padLeft(2, '0')}:'
         '${_currentTime.minute.toString().padLeft(2, '0')}:'
@@ -91,25 +197,138 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.black),
         backgroundColor: AppConstant.appBarColor,
-        title: Text(
-          "${userAddress} - ${userFname}",
-          style: TextStyle(color: AppConstant.appBarWhiteColor,fontSize: 15),
+        title: Column(
+          children: [
+            Text(
+              "Name - ${userFname}",
+              style: TextStyle(
+                color: AppConstant.appBarWhiteColor,
+                fontSize: 14,
+              ),
+            ),
+
+            Text(
+              "($branchName)",
+              style: TextStyle(color: Colors.yellow, fontSize: 13),
+            ),
+          ],
         ),
         actions: [
+          IconButton(
+            onPressed: () {
+              Get.bottomSheet<GetAllBranchModel>(
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : Column(
+                              children: [
+                                DropdownButtonFormField<GetAllBranchModel>(
+                                  value: _selectedBranch,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Select Branch",
+                                  ),
+                                  items: _branchList.map((branch) {
+                                    return DropdownMenuItem(
+                                      value: branch,
+                                      child: Text(branch.branchName),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedBranch = value;
+                                    });
+                                  },
+                                ),
+                                SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    if (_selectedBranch == null) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "Please select a branch",
+                                          ),
+                                        ),
+                                      );
+                                      return;
+                                    }
+
+                                    // 🔥 Update SharedPreferences
+                                    updateBranch(
+                                      _selectedBranch!.branchId.toString(),
+                                      _selectedBranch!.branchName,
+
+                                    );
+
+                                    // 🔥 Close bottom sheet and return selected branch
+                                    Get.back(result: _selectedBranch);
+                                  },
+                                  child: Text("Save"),
+                                ),
+                              ],
+                            ),
+                    ],
+                  ),
+                ),
+                isDismissible: true,
+                enableDrag: true,
+              )!.then((value) {
+                // 🔥 value = selected branch from bottom sheet
+                if (value != null && value is GetAllBranchModel) {
+                  setState(() {
+                    _selectedBranch = value;
+                    Get.offAll(() => DashboardScreen());
+                  });
+
+                  // Optional: Success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("You are entering the branch: ${_selectedBranch!.branchName.toString()}"),
+                      duration: const Duration(seconds: 3), // 3-second duration
+                    ),
+                  );
+                  setState(() {
+
+                  });
+
+                }
+              });
+            },
+            icon: Icon(Icons.settings, color: Colors.white),
+          ),
           IconButton(
             onPressed: () {
               Get.to(() => ProfileScreen());
             },
             icon: Icon(Icons.person_pin, color: AppConstant.appBarWhiteColor),
           ),
-          IconButton(onPressed: ()async{
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.clear();
-            Get.offAll(() => const LoginScreen());
-          }, icon: Icon(Icons.logout,color: Colors.white,))
+          IconButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+              Get.offAll(() => const LoginScreen());
+            },
+            icon: Icon(Icons.logout, color: Colors.white),
+          ),
+
         ],
       ),
       // drawer: AdminDrawerWidget(),
+      //1500f272ad9d47a979e5142838dd0449
       body: SingleChildScrollView(
         child: Container(
           color: Colors.white24,
@@ -118,133 +337,137 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Container(
-                      height: 125,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        color: AppConstant.whiteBackColor,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: AppConstant.borderColor,
-                          width: 2,
-                        ),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          Get.to(() => CiVerificationScreen());
-                        },
-                        child: Stack(
-                          children: [
-                            // Inner shadow overlay
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Colors.orange.withOpacity(0.16),
-                                      // inner shadow feel
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
+                branchId == 1
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Container(
+                            height: 125,
+                            width: 150,
+                            decoration: BoxDecoration(
+                              color: AppConstant.whiteBackColor,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: AppConstant.borderColor,
+                                width: 2,
                               ),
                             ),
-                            // Actual content
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            child: InkWell(
+                              onTap: () {
+                                Get.to(() => CiVerificationScreen());
+                              },
+                              child: Stack(
                                 children: [
-                                  Icon(
-                                    Icons.verified_user,
-                                    size: 30,
-                                    color: AppConstant.iconColor,
+                                  // Inner shadow overlay
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.orange.withOpacity(0.16),
+                                            // inner shadow feel
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    "C-I Verification",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      color: AppConstant.darkHeadingColor,
+                                  // Actual content
+                                  Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.verified_user,
+                                          size: 30,
+                                          color: AppConstant.iconColor,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          "Image Verification",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            color: AppConstant.darkHeadingColor,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 125,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        color: AppConstant.whiteBackColor,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: AppConstant.borderColor,
-                          width: 2,
-                        ),
-                      ),
-                      child: InkWell(
-                        onTap: () async {
-                          Get.to(() => CfiVerificationScreen());
-                        },
-                        child: Stack(
-                          children: [
-                            // Inner shadow overlay
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Colors.orange.withOpacity(0.16),
-                                      // inner shadow feel
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
+                          ),
+                          Container(
+                            height: 125,
+                            width: 150,
+                            decoration: BoxDecoration(
+                              color: AppConstant.whiteBackColor,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: AppConstant.borderColor,
+                                width: 2,
                               ),
                             ),
-                            // Actual content
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            child: InkWell(
+                              onTap: () async {
+                                Get.to(() => CfiVerificationScreen());
+                              },
+                              child: Stack(
                                 children: [
-                                  Icon(
-                                    Icons.verified_user,
-                                    size: 30,
-                                    color: AppConstant.iconColor,
+                                  // Inner shadow overlay
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.orange.withOpacity(0.16),
+                                            // inner shadow feel
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    "C-FI Verification",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      color: AppConstant.darkHeadingColor,
+                                  // Actual content
+                                  Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.verified_user,
+                                          size: 30,
+                                          color: AppConstant.iconColor,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          "FI Verification",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            color: AppConstant.darkHeadingColor,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                          ),
+                        ],
+                      )
+                    : SizedBox.shrink(),
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -262,9 +485,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () {
-                          Get.to(
-                                () => QueryScreen(),
-                          );
+                          Get.to(() => QueryScreen());
                         },
                         child: Stack(
                           children: [
@@ -325,9 +546,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          // _launchInBrowser(
-                          //   'https://fms.bizipac.com/apinew/dynamic_form/executive_add_form.php?user_id=$uid#!/',
-                          // );
+                          Get.to(
+                            () => LeadAllocationScreen(branchid: "$branchId"),
+                          );
                         },
                         child: Stack(
                           children: [
@@ -370,7 +591,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           color: AppConstant.darkHeadingColor,
                                         ),
                                       ),
-
                                     ],
                                   ),
                                 ],
@@ -398,10 +618,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       child: InkWell(
-                        onTap: () {
-                          // Get.to(
-                          //       () => LeadCheckScreen(uid: uid, branchId: branchId),
-                          // );
+                        onTap: () async {
+                          Get.to(() => LeadTransferManagerScreen(branchid:branchId.toString()));
                         },
                         child: Stack(
                           children: [
@@ -434,7 +652,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    "Lead Transfer \nManger",
+                                    "Lead Transfer \n Management",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -462,7 +680,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          Get.to(()=>TransferViewScreen());
+                          Get.to(() => TransferViewScreen());
                         },
                         child: Stack(
                           children: [
@@ -505,7 +723,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           color: AppConstant.darkHeadingColor,
                                         ),
                                       ),
-
                                     ],
                                   ),
                                 ],
@@ -534,9 +751,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () {
-                          // Get.to(
-                          //       () => LeadCheckScreen(uid: uid, branchId: branchId),
-                          // );
+                          Get.to(
+                            () => DailyLeadReportScreen(
+                              userid: userId.toString(),
+                              roleid: userRole.toString(),
+                            ),
+                          );
                         },
                         child: Stack(
                           children: [
@@ -597,7 +817,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          Get.to(()=>FieldReportAiScreen());
+                          Get.to(() => FieldReportAiScreen());
                         },
                         child: Stack(
                           children: [
@@ -640,7 +860,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           color: AppConstant.darkHeadingColor,
                                         ),
                                       ),
-
                                     ],
                                   ),
                                 ],
@@ -669,9 +888,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () {
-                          // Get.to(
-                          //       () => LeadCheckScreen(uid: uid, branchId: branchId),
-                          // );
+                          Get.to(
+                            () => FreshLeadScreen(
+                              user_id: userId.toString(),
+                              branchid: branchId.toString(),
+                            ),
+                          );
                         },
                         child: Stack(
                           children: [
@@ -704,7 +926,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    "Lead Asign \n to TL",
+                                    "Lead Assign \n to TL",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -731,7 +953,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       child: InkWell(
-                        onTap: () async{
+                        onTap: (){
+                          Get.to(()=>AssignCallBackScreen(branchid: branchId.toString(), user_id: userId.toString(),));
+                        },
+                        child: Stack(
+                          children: [
+                            // Inner shadow overlay
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.orange.withOpacity(0.16),
+                                      // inner shadow feel
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Actual content
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.assignment_turned_in,
+                                    size: 30,
+                                    color: AppConstant.iconColor,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    "Assign Call Back",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: AppConstant.darkHeadingColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+
+                    Container(
+                      height: 125,
+                      width: 150,
+                      decoration: BoxDecoration(
+                        color: AppConstant.whiteBackColor,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: AppConstant.borderColor,
+                          width: 2,
+                        ),
+                      ),
+                      child: InkWell(
+                        onTap: () async {
                           // 1️⃣ Fetch server key first
                           GetServerKey getServerKey = GetServerKey();
                           String? serverKey = await getServerKey
@@ -740,9 +1030,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           print(serverKey);
                           print("------------------------");
                           // 3️⃣ Navigate only if password correct
-                            Get.to(
-                                  () => SendMessageScreen(serverKeys: serverKey),
-                            );
+                          Get.to(
+                                () => SendMessageScreen(serverKeys: serverKey),
+                          );
                         },
                         child: Stack(
                           children: [
@@ -793,7 +1083,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
                 SizedBox(height: 10),
-
               ],
             ),
           ),

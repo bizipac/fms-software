@@ -37,7 +37,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       userRole = prefs.getInt('user_role');
       authId = prefs.getInt('auth_id');
       branchId = prefs.getInt('branch_id');
-
       userName = prefs.getString('user_name');
       branchName = prefs.getString('branch_name');
       userFname = prefs.getString('user_fname');
@@ -47,7 +46,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       userMobile = prefs.getString('user_mobile');
       roleName = prefs.getString('role_name');
       companyName = prefs.getString('company_name');
-
       isLoading = false;
     });
   }
@@ -76,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           elevation: 6,
           child: Container(
             width: 300,
-            height: 550,
+            height: 590,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: AppConstant.borderColor, width: 2),
@@ -96,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Text(
                           companyName ?? '',
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -106,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
                 // 👤 Profile Image
                 Padding(
@@ -131,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 )
 ,
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 // 🧾 Info Table
                 Container(
                   padding: const EdgeInsets.all(5),
@@ -149,6 +147,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       tableRow("User ID", "$userId"),
                       tableRow("Role", roleName?.toUpperCase() ?? ''),
                       tableRow("Mobile No.", userMobile ?? ''),
+                      //tableRow("Branch id.","$branchId"),
+                      tableRow("Branch Name.","$branchName"),
                     ],
                   ),
                 ),
@@ -165,48 +165,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: const TextStyle(fontSize: 11),
                       ),
 
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 60,),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Column(
-                      //   children: [
-                      //     Image.network(
-                      //       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBffILJ92k1DqB9SbQ2hSlGx3DCu22vNoGBA&s',
-                      //       width: 80,
-                      //       height: 40,
-                      //       fit: BoxFit.contain,
-                      //     ),
-                      //
-                      //   ],
-                      // ),
-                      Column(
-                        children: [
-                          Image.asset(
-                            'assets/logo/cmp_logo.png',
-                            width: 80,
-                            height: 40,
-                            fit: BoxFit.contain,
-                          ),
-
-                        ],
-                      ),
-                      // Column(
-                      //   children: [
-                      //     Image.network(
-                      //       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpuLVmHdeBlG7ibYOp-61BhNjvy4RZvLwljA&s',
-                      //       width: 80,
-                      //       height: 40,
-                      //       fit: BoxFit.contain,
-                      //     ),
-                      //
-                      //   ],
-                      // ),
                     ],
                   ),
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/user_model.dart';
+import '../../utils/app_constant.dart';
 import '../dashboard_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -46,7 +47,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0C4C8A),
+      backgroundColor:Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -73,7 +74,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -81,9 +82,9 @@ class _OtpScreenState extends State<OtpScreen> {
                   Row(
                     children: [
                       Text(
-                        'Hello -',
+                        'Hello - ',
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: Colors.black54,
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
@@ -91,8 +92,9 @@ class _OtpScreenState extends State<OtpScreen> {
                       Text(
                         widget.userModel.data.first.userFname ?? '',
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: Colors.black54,
                           fontSize: 13,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -102,21 +104,27 @@ class _OtpScreenState extends State<OtpScreen> {
                   TextFormField(
                     controller: _otpController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.black),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter OTP';
                       }
                       return null;
                     },
-                    decoration: const InputDecoration(
+                    decoration:  InputDecoration(
                       labelText: 'Enter OTP..',
-                      labelStyle: TextStyle(color: Colors.white70),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white38),
+                      labelStyle: TextStyle(color: Colors.black54),
+                      border:  OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppConstant.borderColor,
+                        ), // border when not focused
                       ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
+                      focusedBorder:  OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppConstant.borderColor,
+                          width: 2.0,
+                        ), // border when focused
                       ),
                     ),
                   ),
@@ -127,7 +135,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     height: 45,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF7A81B),
+                        backgroundColor: AppConstant.appBarColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -151,7 +159,6 @@ class _OtpScreenState extends State<OtpScreen> {
                           }
                         }
                       },
-
                       child: const Text(
                         'Verify',
                         style: TextStyle(

@@ -16,3 +16,17 @@ class GetLeadDetailsController extends GetxController {
     }
   }
 }
+class GetTransferLeadController extends GetxController {
+  var isLoading = false.obs;
+  var leadDetails = Rxn<GetLeadDetails>();
+
+  Future<void> fetchTransferLeads(String mobileOrLeadId,String branchId) async {
+    try {
+      isLoading.value = true;
+      final result = await LeadService.fetchTransferLeads(mobileOrLeadId,branchId);
+      leadDetails.value = result;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+}

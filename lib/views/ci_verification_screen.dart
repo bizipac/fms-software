@@ -25,11 +25,11 @@ class _CiVerificationScreenState extends State<CiVerificationScreen> {
   final TextEditingController _pickupfromdateController = TextEditingController();
   final TextEditingController _pickuptodateController = TextEditingController();
   String? _selectedStatus; // holds the selected item
-  final List<String> _statusList = [
-    'verified',
-    'not_veri',
-    'all',
-  ];
+  final Map<String, String> _statusMap = {
+    "verified": "Verified",
+    "not_veri": "Not Verified",
+    "all": "All",
+  };
   @override
   void initState() {
     super.initState();
@@ -95,7 +95,7 @@ class _CiVerificationScreenState extends State<CiVerificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("C I Verification",style: TextStyle(color: AppConstant.appBarWhiteColor),),
+          title: Text("Image Verification",style: TextStyle(color: AppConstant.appBarWhiteColor),),
           backgroundColor: AppConstant.appBarColor,
           iconTheme: IconThemeData(color: AppConstant.appBarWhiteColor),
         ),
@@ -114,7 +114,7 @@ class _CiVerificationScreenState extends State<CiVerificationScreen> {
                     return DropdownMenuItem(
                       value: client,
                       child: Text(
-                        client.clientName,
+                        client.clientCode,
                         overflow: TextOverflow.ellipsis, // 👈 safely trims long text
                         style: const TextStyle(fontSize: 14),
                       ),
@@ -141,8 +141,8 @@ class _CiVerificationScreenState extends State<CiVerificationScreen> {
                     DateTime? pickedDate = await showDatePicker(
                       context: context,
                       initialDate: DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2035),
+                      firstDate: DateTime(2010),
+                      lastDate: DateTime.now(),
                     );
                     if (pickedDate != null) {
                       // 👇 Format to yyyy-MM-dd
@@ -171,8 +171,8 @@ class _CiVerificationScreenState extends State<CiVerificationScreen> {
                     DateTime? pickedDate = await showDatePicker(
                       context: context,
                       initialDate: DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2035),
+                      firstDate: DateTime(2010),
+                      lastDate: DateTime.now(),
                     );
                     if (pickedDate != null) {
                       // 👇 Format to yyyy-MM-dd
@@ -191,19 +191,16 @@ class _CiVerificationScreenState extends State<CiVerificationScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _selectedStatus,
-                  isExpanded: true, // 👈 prevents overflow
-                  items: _statusList.map((String value) {
+                  isExpanded: true,
+                  items: _statusMap.entries.map((entry) {
                     return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
+                      value: entry.key,       // API value
+                      child: Text(entry.value), // UI display value
                     );
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
-                      _selectedStatus = value;
-                      print("-------------------------");
-                      print(_selectedStatus);
-                      print("-------------------------");
+                      _selectedStatus = value;   // yeh API value store karega
                     });
                   },
                   decoration: const InputDecoration(

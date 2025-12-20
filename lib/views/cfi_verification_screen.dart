@@ -37,7 +37,13 @@ class _CfiVerificationScreenState extends State<CfiVerificationScreen> {
   String? _selectedStatus;
 
   // Status options match the API's expected 'feaction' values
-  final List<String> _statusList = ['verified', 'not_veri', 'all'];
+  final Map<String, String> _statusMap = {
+    "verified": "Verified",
+    "not_veri": "Not Verified",
+    "all": "All",
+  };
+
+
   Future<void> _launchInBrowser(String url) async {
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -142,7 +148,7 @@ class _CfiVerificationScreenState extends State<CfiVerificationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "CFI Verification",
+          "FI Verification",
           style: TextStyle(color: AppConstant.appBarWhiteColor),
         ),
         backgroundColor: AppConstant.appBarColor,
@@ -164,7 +170,7 @@ class _CfiVerificationScreenState extends State<CfiVerificationScreen> {
                   return DropdownMenuItem(
                     value: client,
                     child: Text(
-                      client.clientName,
+                      client.clientCode,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -192,7 +198,7 @@ class _CfiVerificationScreenState extends State<CfiVerificationScreen> {
                   final pickedDate = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
-                    firstDate: DateTime(2005),
+                    firstDate: DateTime(2010),
                     lastDate: DateTime.now(),
                   );
                   if (pickedDate != null) {
@@ -218,7 +224,7 @@ class _CfiVerificationScreenState extends State<CfiVerificationScreen> {
                   final pickedDate = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
-                    firstDate: DateTime(2005),
+                    firstDate: DateTime(2010),
                     lastDate: DateTime.now(),
                   );
                   if (pickedDate != null) {
@@ -235,19 +241,23 @@ class _CfiVerificationScreenState extends State<CfiVerificationScreen> {
               DropdownButtonFormField<String>(
                 value: _selectedStatus,
                 isExpanded: true,
-                items: _statusList.map((String value) {
+                items: _statusMap.entries.map((entry) {
                   return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
+                    value: entry.key,       // API value
+                    child: Text(entry.value), // UI display value
                   );
                 }).toList(),
-                onChanged: (value) =>
-                    setState(() => _selectedStatus = value),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value;   // yeh API value store karega
+                  });
+                },
                 decoration: const InputDecoration(
                   labelText: 'Select Verification Status',
                   border: OutlineInputBorder(),
                 ),
               ),
+
               const SizedBox(height: 20),
 
               // Fetch Button

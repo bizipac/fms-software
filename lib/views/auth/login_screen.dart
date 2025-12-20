@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final size = MediaQuery.of(context).size; // for responsiveness
 
     return Scaffold(
-      backgroundColor: AppConstant.appBarColor,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   const Text(
@@ -62,14 +62,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     "I'm waiting for you, please enter your detail",
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: Colors.black54,
                       fontSize: 13,
                     ),
                   ),
@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _mobileController,
                     keyboardType: TextInputType.text,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.black),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter mobile number';
@@ -87,14 +87,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                       return null;
                     },
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Register mobile number',
-                      labelStyle: TextStyle(color: Colors.white70),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white38),
+                      labelStyle: const TextStyle(color: Colors.black54),
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppConstant.borderColor,
+                        ), // border when not focused
                       ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
+                      focusedBorder:  OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppConstant.borderColor,
+                          width: 2.0,
+                        ), // border when focused
                       ),
                     ),
                   ),
@@ -104,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     keyboardType: TextInputType.text,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.black),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter password';
@@ -115,19 +121,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white38),
+                      labelStyle: const TextStyle(color: Colors.black54),
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppConstant.borderColor,
+                        ), // border when not focused
                       ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
+                      focusedBorder:  OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppConstant.borderColor,
+                          width: 2.0,
+                        ), // border when focused
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
                               ? Icons.visibility_off
                               : Icons.visibility,
-                          color: Colors.white70,
+                          color: Colors.black,
                         ),
                         onPressed: () {
                           setState(() {
@@ -144,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 45,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF7A81B), // yellow button
+                        backgroundColor:  AppConstant.appBarColor, // yellow button
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
