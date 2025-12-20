@@ -47,11 +47,15 @@ dependencies:
   url_launcher:
   audioplayers: ^6.1.0
   intl:
-  excel:
+  excel: ^4.0.6
+  external_path:
   path_provider:
   permission_handler:
   pdf:
   printing:
+  multi_select_flutter:
+  geolocator:
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:
