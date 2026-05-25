@@ -16,7 +16,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../controllers/dashboard_controller.dart';
 import '../controllers/get_branch_controller.dart';
+import '../models/dashboard_model.dart';
 import '../models/get_all_branch_model.dart';
 import '../notification/send_notification_screen.dart';
 import '../services/get_server_key.dart';
@@ -59,6 +61,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
   List<String> allowedBranchIds = [];
   bool _isLoadingBranches = true;
+  final DashboardController controller = DashboardController();
+  DashboardResponse? dashboardResponse;
+  bool isLoading = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -70,6 +75,170 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
     loadUserData(); // load on start
     loadBranches();
+    // 🔹 Screen open hone ke baad sheet show karega
+  }
+
+  bool _dialogShown = false;
+
+  Future<void> _loadDashboard() async {
+    if (_dialogShown) return;
+
+    setState(() => isLoading = true);
+
+    dashboardResponse = await controller.fetchDashboard(branchId.toString());
+    setState(() => isLoading = false);
+
+    if (dashboardResponse != null && !_dialogShown) {
+      _dialogShown = true;
+      _showCenterDialog();
+    }
+  }
+
+  void _showCenterDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final data = dashboardResponse!.dashboard;
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: Colors.white,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  /// Title
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Health Dashboard - ",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppConstant.appBarColor,
+                        ),
+                      ),
+                      Text(
+                        "$branchName",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(),
+                  const SizedBox(height: 16),
+
+                  /// ================= TELECALLING TABLE =================
+                  _tableTitle("Telecalling"),
+                  Table(
+                    border: TableBorder.all(color: AppConstant.borderColor),
+                    columnWidths: const {
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(1),
+                    },
+                    children: [
+                      _tableRow("Pending", data.tcDashboard.pending.toString()),
+                      _tableRow(
+                        "Overdue",
+                        data.tcDashboard.pendingOverdue.toString(),
+                      ),
+                      _tableRow(
+                        "Tele Calling",
+                        data.tcDashboard.telecalling.toString(),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  /// ================= ON FIELD TABLE =================
+                  _tableTitle("On Field"),
+                  Table(
+                    border: TableBorder.all(color: AppConstant.borderColor),
+                    columnWidths: const {
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(1),
+                    },
+                    children: [
+                      _tableRow(
+                        "Before Today",
+                        data.onFieldDashboard.pendingBeforeToday.toString(),
+                      ),
+                      _tableRow(
+                        "Today",
+                        data.onFieldDashboard.today.toString(),
+                      ),
+                      _tableRow(
+                        "Future",
+                        data.onFieldDashboard.future.toString(),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  /// ================= APP FIXED TABLE =================
+                  _tableTitle("App Fixed"),
+                  Table(
+                    border: TableBorder.all(color: AppConstant.borderColor),
+                    columnWidths: const {
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(1),
+                    },
+                    children: [
+                      _tableRow(
+                        "Before Today",
+                        data.appFixedDashboard.pendingBeforeToday.toString(),
+                      ),
+                      _tableRow(
+                        "Today",
+                        data.appFixedDashboard.today.toString(),
+                      ),
+                      _tableRow(
+                        "Future",
+                        data.appFixedDashboard.future.toString(),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// Continue Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Get.back(),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: AppConstant.appBarColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        "Dashboard",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void updateBranch(String newBranchId, String newBranchName) async {
@@ -90,9 +259,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     print("Updated Branch Name: $name");
     print("Updated Branch ID  : $savedId");
     print("Branch updated successfully!");
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   Future<void> loadBranches() async {
@@ -142,8 +309,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (branchMulti != null && branchMulti!.isNotEmpty) {
         allowedBranchIds = branchMulti!.split(','); // ["1","5","8"]
       }
-      setState(() {
-      });
+      setState(() {});
+      // ✅ IMPORTANT: branchId milne ke baad hi dashboard call
+      if (branchId != null) {
+        _loadDashboard();
+      }
     });
   }
 
@@ -177,18 +347,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-
   @override
   void dispose() {
-    _timer?.cancel(); // stop before widget is destroyed
+    _timer.cancel(); // stop before widget is destroyed
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-
-    });
+    setState(() {});
     final String timeString =
         '${_currentTime.hour.toString().padLeft(2, '0')}:'
         '${_currentTime.minute.toString().padLeft(2, '0')}:'
@@ -271,7 +438,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     updateBranch(
                                       _selectedBranch!.branchId.toString(),
                                       _selectedBranch!.branchName,
-
                                     );
 
                                     // 🔥 Close bottom sheet and return selected branch
@@ -286,9 +452,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 isDismissible: true,
                 enableDrag: true,
-              )!.then((value) {
+              ).then((value) {
                 // 🔥 value = selected branch from bottom sheet
-                if (value != null && value is GetAllBranchModel) {
+                if (value != null) {
                   setState(() {
                     _selectedBranch = value;
                     Get.offAll(() => DashboardScreen());
@@ -297,14 +463,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Optional: Success message
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("You are entering the branch: ${_selectedBranch!.branchName.toString()}"),
+                      content: Text(
+                        "You are entering the branch: ${_selectedBranch!.branchName.toString()}",
+                      ),
                       duration: const Duration(seconds: 3), // 3-second duration
                     ),
                   );
-                  setState(() {
-
-                  });
-
+                  setState(() {});
                 }
               });
             },
@@ -324,7 +489,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             icon: Icon(Icons.logout, color: Colors.white),
           ),
-
         ],
       ),
       // drawer: AdminDrawerWidget(),
@@ -619,7 +783,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: InkWell(
                         onTap: () async {
-                          Get.to(() => LeadTransferManagerScreen(branchid:branchId.toString()));
+                          Get.to(
+                            () => LeadTransferManagerScreen(
+                              branchid: branchId.toString(),
+                            ),
+                          );
                         },
                         child: Stack(
                           children: [
@@ -953,8 +1121,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       child: InkWell(
-                        onTap: (){
-                          Get.to(()=>AssignCallBackScreen(branchid: branchId.toString(), user_id: userId.toString(),));
+                        onTap: () {
+                          Get.to(
+                            () => AssignCallBackScreen(
+                              branchid: branchId.toString(),
+                              user_id: userId.toString(),
+                            ),
+                          );
                         },
                         child: Stack(
                           children: [
@@ -1008,7 +1181,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-
                     Container(
                       height: 125,
                       width: 150,
@@ -1031,7 +1203,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           print("------------------------");
                           // 3️⃣ Navigate only if password correct
                           Get.to(
-                                () => SendMessageScreen(serverKeys: serverKey),
+                            () => SendMessageScreen(serverKeys: serverKey),
                           );
                         },
                         child: Stack(
@@ -1183,6 +1355,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             // 👇 Postpone Lead Button
           ],
+        ),
+      ),
+    );
+  }
+
+  TableRow _tableRow(String title, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: AppConstant.appBarColor,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.normal),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tableTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: AppConstant.appBarColor,
+          ),
         ),
       ),
     );

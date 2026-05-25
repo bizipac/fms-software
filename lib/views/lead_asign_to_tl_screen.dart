@@ -109,7 +109,7 @@ class _FreshLeadScreenState extends State<FreshLeadScreen> {
 
   Future<void> loadUsers() async {
     try {
-      final result = await _controllerTele.fetchUsers("1", "4");
+      final result = await _controllerTele.fetchUsers(widget.branchid, "4");
 
       final filteredUsers = result.where((user) {
         List<String> branches = user.branchMulti.split(",");

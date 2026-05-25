@@ -1,6 +1,9 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../utils/app_constant.dart';
+import 'terms_conditions_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,18 +13,17 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int? userId, userRole, authId, branchId;
-  String? userName,
-      branchName,
-      userFname,
+  int? userId, authId, branchId;
+  String? userFname,
       userAvatar,
       userAddress,
-      branchMulti,
       userMobile,
       roleName,
+      branchName,
       companyName;
 
   bool isLoading = true;
+  bool isFront = true;
 
   @override
   void initState() {
@@ -31,28 +33,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
-
     setState(() {
       userId = prefs.getInt('user_id');
-      userRole = prefs.getInt('user_role');
       authId = prefs.getInt('auth_id');
       branchId = prefs.getInt('branch_id');
-      userName = prefs.getString('user_name');
-      branchName = prefs.getString('branch_name');
       userFname = prefs.getString('user_fname');
       userAvatar = prefs.getString('user_avatar');
       userAddress = prefs.getString('user_address');
-      branchMulti = prefs.getString('branch_multi');
       userMobile = prefs.getString('user_mobile');
       roleName = prefs.getString('role_name');
+      branchName = prefs.getString('branch_name');
       companyName = prefs.getString('company_name');
       isLoading = false;
     });
   }
 
+  void toggleCard() {
+    setState(() {
+      isFront = !isFront;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (isLoading || companyName == null) {
+    if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -60,141 +64,203 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade300,
+
       appBar: AppBar(
         backgroundColor: AppConstant.appBarColor,
-        title: Text(
-          'Profile',
-          style: TextStyle(color: AppConstant.appBarWhiteColor, fontSize: 18),
+        iconTheme: IconThemeData(color: Colors.white),
+        title: const Text(
+          "Profile",
+          style: TextStyle(fontSize: 18,color: Colors.white),
         ),
-        iconTheme: IconThemeData(color: AppConstant.appBarWhiteColor),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline,color: Colors.white,),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TermsAndConditionsScreen(),
+                ),
+              );
+            },
+          )
+        ],
+
       ),
       body: Center(
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          elevation: 6,
-          child: Container(
-            width: 300,
-            height: 590,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppConstant.borderColor, width: 2),
-              color: Colors.white,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // 🔶 Header
-                Container(
-                  width: double.infinity,
-                  color: AppConstant.darkButton,
-                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                  child: Column(
-                    children: [
-                      Center(
-                        child: Text(
-                          companyName ?? '',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                // 👤 Profile Image
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppConstant.borderColor, width: 2),
-                    ),
-                    child: ClipOval(
-                      child: Image(
-                        image: (userAvatar != null && userAvatar!.startsWith('http'))
-                            ? NetworkImage(userAvatar!)
-                            : const AssetImage('assets/logo/cmp_logo.png') as ImageProvider,
-                        fit: BoxFit.cover,
-                        width: 100,
-                        height: 100,
-                      ),
-                    ),
-                  ),
-                )
-,
-                const SizedBox(height: 10),
-                // 🧾 Info Table
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  child: Table(
-                    border: TableBorder.all(
-                      color: AppConstant.borderColor,
-                      width: 1,
-                    ),
-                    columnWidths: const {
-                      0: FlexColumnWidth(1),
-                      1: FlexColumnWidth(2),
-                    },
-                    children: [
-                      tableRow("Name", userFname ?? ''),
-                      tableRow("User ID", "$userId"),
-                      tableRow("Role", roleName?.toUpperCase() ?? ''),
-                      tableRow("Mobile No.", userMobile ?? ''),
-                      //tableRow("Branch id.","$branchId"),
-                      tableRow("Branch Name.","$branchName"),
-                    ],
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: Column(
-                    children: [
-                      const Divider(thickness: 1),
-                      const SizedBox(height: 8),
-                      Text(
-                        userAddress ?? 'No address available',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-
-                    ],
-                  ),
-                ),
-
-              ],
-            ),
+        child: GestureDetector(
+          onTap: toggleCard,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 600),
+            transitionBuilder: (child, animation) {
+              final rotate =
+              Tween(begin: pi, end: 0.0).animate(animation);
+              return AnimatedBuilder(
+                animation: rotate,
+                child: child,
+                builder: (context, child) {
+                  return Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(rotate.value),
+                    child: child,
+                  );
+                },
+              );
+            },
+            child: isFront ? frontCard() : backCard(),
           ),
         ),
       ),
     );
   }
 
-  TableRow tableRow(String title, String value) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(6.0),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
+  // ================= FRONT CARD =================
+  Widget frontCard() {
+    return Container(
+      key: const ValueKey("front"),
+      width: 320,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 10,
+            color: Colors.black26,
+            offset: Offset(0, 6),
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          // HEADER
+          Container(
+            height: 42,
+            decoration: BoxDecoration(
               color: AppConstant.darkButton,
+              borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Center(
+              child: Text(
+                companyName ?? '',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(6.0),
-          child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
-      ],
+
+          const SizedBox(height: 10),
+
+          // PROFILE SECTION
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundImage:
+                  (userAvatar != null && userAvatar!.startsWith('http'))
+                      ? NetworkImage(userAvatar!)
+                      : const AssetImage('assets/logo/cmp_logo.png')
+                  as ImageProvider,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userFname ?? '',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        roleName?.toUpperCase() ?? '',
+                        style: TextStyle(
+                          color: AppConstant.darkButton,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text("ID : $userId",
+                          style: const TextStyle(fontSize: 11)),
+                      Text("Branch : $branchName",
+                          style: const TextStyle(fontSize: 11)),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+
+          const Spacer(),
+
+          const Padding(
+            padding: EdgeInsets.only(bottom: 6),
+            child: Text(
+              "Tap to flip",
+              style: TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= BACK CARD =================
+  Widget backCard() {
+    return Container(
+      key: const ValueKey("back"),
+      width: 320,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.grey.shade100,
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 10,
+            color: Colors.black26,
+            offset: Offset(0, 6),
+          )
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          QrImageView(
+            data: "USER_ID:$userId | AUTH_ID:$authId",
+            size: 90,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Mobile : ${userMobile ?? ''}",
+            style: const TextStyle(fontSize: 12),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              userAddress ?? '',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 10),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Authorized Personnel",
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

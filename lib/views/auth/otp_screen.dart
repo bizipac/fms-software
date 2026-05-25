@@ -104,6 +104,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   TextFormField(
                     controller: _otpController,
                     keyboardType: TextInputType.number,
+                    maxLength: 6,
                     style: const TextStyle(color: Colors.black),
                     validator: (value) {
                       if (value == null || value.isEmpty) {

@@ -190,7 +190,7 @@ class _LeadAllocationScreenState extends State<LeadAllocationScreen> {
   final UserController userController1=UserController();
   Future<void> loadUsers1() async {
     try {
-      final result = await _controller.fetchUsers("1");
+      final result = await _controller.fetchUsers(widget.branchid);
 
       setState(() {
         _users = result;

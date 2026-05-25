@@ -102,7 +102,7 @@ class _AssignCallBackScreenState extends State<AssignCallBackScreen> {
   /// 👤 Load Telecaller
   Future<void> loadUsers() async {
     try {
-      final result = await _controllerTele.fetchUsers("1", "4");
+      final result = await _controllerTele.fetchUsers(widget.branchid, "4");
       _userList = result
           .where((u) => u.branchMulti.split(",").contains(widget.branchid))
           .toList();
@@ -254,7 +254,6 @@ class _AssignCallBackScreenState extends State<AssignCallBackScreen> {
               DataCell(Text(lead.mobile)),
               DataCell(Text(lead.product)),
               DataCell(Text(lead.city)),
-
               DataCell(Text(
                 lead.statusName,
                 style: const TextStyle(
@@ -276,7 +275,7 @@ class _AssignCallBackScreenState extends State<AssignCallBackScreen> {
         children: [
           ElevatedButton(
             onPressed: currentPage > 0
-                ? () => setState(() => currentPage--)
+                ? () => setState(()  => currentPage--)
                 : null,
             child: const Text("Previous"),
           ),

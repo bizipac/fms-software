@@ -140,7 +140,7 @@ class _TransferLeadScreenState extends State<TransferLeadScreen> {
   }
   Future<void> loadUsers() async {
     try {
-      final result = await _controllerTele.fetchUsers("1", "4");
+      final result = await _controllerTele.fetchUsers(widget.branchid, "4");
 
       // 🔥 Filter users whose branch_multi contains widget.branchid
       final filteredUsers = result.where((user) {

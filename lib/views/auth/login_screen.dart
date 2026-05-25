@@ -65,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.black,
                     ),
                   ),
+
                   const SizedBox(height: 8),
                   const Text(
                     "I'm waiting for you, please enter your detail",

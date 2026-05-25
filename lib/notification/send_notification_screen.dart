@@ -45,7 +45,7 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
   Future<void> _loadBranches() async {
     try {
       final branches = await _branchController.fetchBranches();
-      setState(() {
+      setState((){
         _branchList = branches;
         _isLoadingBranches = false;
       });
